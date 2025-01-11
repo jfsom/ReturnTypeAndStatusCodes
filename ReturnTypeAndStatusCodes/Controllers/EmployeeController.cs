@@ -29,7 +29,7 @@ namespace ReturnTypeAndStatusCodes.Controllers
         }
 
         [HttpGet("All")]
-        public List<Employee> GetAllEmployee()
+        public IEnumerable<Employee> GetAllEmployee()
         {
             return new List<Employee>()
             {
