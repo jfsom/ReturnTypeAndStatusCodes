@@ -16,105 +16,167 @@ namespace ReturnTypeAndStatusCodes.Controllers
         };
 
         // Read (GET all employees)
-        // This action returns a list of all employees
         [HttpGet]
-        public IActionResult GetAllEmployees()
+        [ProducesResponseType(typeof(IEnumerable<Employee>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> GetAllEmployees()
         {
-            // Return the list of employees with a 200 OK status
-            return Ok(Employees); // OkObjectResult with data
+            try
+            {
+                // Simulate an asynchronous operation
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                // Return the list of employees with a 200 OK status
+                return Ok(Employees);
+            }
+            catch (Exception)
+            {
+                // Return 500 Internal Server Error in case of an exception
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Read (GET employee by ID)
-        // This action returns a single employee based on the provided ID
         [HttpGet("{id}")]
-        public IActionResult GetEmployeeById(int id)
+        [ProducesResponseType(typeof(Employee), 200)]
+        [ProducesResponseType(typeof(object), 404)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> GetEmployeeById(int id)
         {
-            // Find the employee with the specified ID
-            var employee = Employees.FirstOrDefault(e => e.Id == id);
-            if (employee == null)
+            try
             {
-                // If the employee is not found, return a 404 Not Found status with a custom message
-                return NotFound(new { message = $"No employee found with ID {id}" });  // NotFoundObjectResult with additional info
+                // Simulate an asynchronous operation
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                // Find the employee with the specified ID
+                var employee = Employees.FirstOrDefault(e => e.Id == id);
+                if (employee == null)
+                {
+                    // If the employee is not found, return a 404 Not Found status with a custom message
+                    return NotFound(new { message = $"No employee found with ID {id}" });
+                }
+
+                // If the employee is found, return it with a 200 OK status
+                return Ok(employee);
             }
-            // If the employee is found, return it with a 200 OK status
-            return Ok(employee); // OkObjectResult with the employee
+            catch (Exception)
+            {
+                // Return 500 Internal Server Error in case of an exception
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Create (POST new employee)
-        // This action creates a new employee
         [HttpPost]
-        public IActionResult CreateEmployee([FromBody] Employee employee)
+        [ProducesResponseType(typeof(Employee), 201)]
+        [ProducesResponseType(typeof(object), 400)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> CreateEmployee([FromBody] Employee employee)
         {
-            // Validate the employee data
-            if (employee == null || string.IsNullOrEmpty(employee.Name))
+            try
             {
-                // If the data is invalid, return a 400 Bad Request status with a custom message
-                return BadRequest(new { Message = "Invalid employee data" }); // BadRequestObjectResult with data
+                // Simulate an asynchronous operation
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                // Validate the employee data
+                if (employee == null || string.IsNullOrEmpty(employee.Name))
+                {
+                    // If the data is invalid, return a 400 Bad Request status with a custom message
+                    return BadRequest(new { Message = "Invalid employee data" });
+                }
+
+                // Assign a new ID to the employee
+                employee.Id = Employees.Count + 1;
+
+                // Add the employee to the list
+                Employees.Add(employee);
+
+                // Return a 201 Created status with a location header pointing to the newly created employee
+                return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, employee);
             }
-            // Assign a new ID to the employee
-            employee.Id = Employees.Count + 1;
-            // Add the employee to the list
-            Employees.Add(employee);
-            // Return a 201 Created status with a location header pointing to the newly created employee
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, employee); // CreatedAtActionResult
+            catch (Exception)
+            {
+                // Return 500 Internal Server Error in case of an exception
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Update (PUT existing employee)
-        // This action updates an existing employee based on the provided ID
         [HttpPut("{id}")]
-        public IActionResult UpdateEmployee(int id, [FromBody] Employee employee)
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(object), 400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> UpdateEmployee(int id, [FromBody] Employee employee)
         {
-            // Validate the employee data
-            if (employee == null || id != employee.Id)
+            try
             {
-                // If the data is invalid, return a 400 Bad Request status with a custom message
-                return BadRequest(new { Message = "Invalid employee data" }); // BadRequestObjectResult with data
-            }
+                // Simulate an asynchronous operation
+                await Task.Delay(TimeSpan.FromSeconds(1));
 
-            // Find the existing employee with the specified ID
-            var existingEmployee = Employees.FirstOrDefault(e => e.Id == id);
-            if (existingEmployee == null)
+                // Validate the employee data
+                if (employee == null || id != employee.Id)
+                {
+                    // If the data is invalid, return a 400 Bad Request status with a custom message
+                    return BadRequest(new { Message = "Invalid employee data" });
+                }
+
+                // Find the existing employee with the specified ID
+                var existingEmployee = Employees.FirstOrDefault(e => e.Id == id);
+                if (existingEmployee == null)
+                {
+                    // If the employee is not found, return a 404 Not Found status
+                    return NotFound();
+                }
+
+                // Update the employee properties
+                existingEmployee.Name = employee.Name;
+                existingEmployee.Gender = employee.Gender;
+                existingEmployee.City = employee.City;
+                existingEmployee.Age = employee.Age;
+                existingEmployee.Department = employee.Department;
+
+                // Return a 204 No Content status to indicate that the update was successful
+                return NoContent();
+            }
+            catch (Exception)
             {
-                // If the employee is not found, return a 404 Not Found status
-                return NotFound(); // NotFoundResult
+                // Return 500 Internal Server Error in case of an exception
+                return StatusCode(500, "Internal server error");
             }
-
-            // Update the employee properties
-            existingEmployee.Name = employee.Name;
-            existingEmployee.Gender = employee.Gender;
-            existingEmployee.City = employee.City;
-            existingEmployee.Age = employee.Age;
-            existingEmployee.Department = employee.Department;
-
-            // Return a 204 No Content status to indicate that the update was successful
-            return NoContent(); // NoContentResult
         }
 
         // Delete (DELETE employee)
-        // This action deletes an employee based on the provided ID
         [HttpDelete("{id}")]
-        public IActionResult DeleteEmployee(int id)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
-            // Find the employee with the specified ID
-            var employee = Employees.FirstOrDefault(e => e.Id == id);
-            if (employee == null)
+            try
             {
-                // If the employee is not found, return a 404 Not Found status
-                return NotFound(); // NotFoundResult
-            }
-            // Remove the employee from the list
-            Employees.Remove(employee);
-            // Return a 200 OK status with no content
-            return Ok(); // OkResult without data
-        }
+                // Simulate an asynchronous operation
+                await Task.Delay(TimeSpan.FromSeconds(1));
 
-        // Example of a custom status code
-        // This action returns a response with the specified status code
-        [HttpGet("statuscode/{code}")]
-        public IActionResult GetStatusCodeResult(int code)
-        {
-            // Return a response with the specified status code
-            return StatusCode(code); // StatusCodeResult
+                // Find the employee with the specified ID
+                var employee = Employees.FirstOrDefault(e => e.Id == id);
+                if (employee == null)
+                {
+                    // If the employee is not found, return a 404 Not Found status
+                    return NotFound();
+                }
+
+                // Remove the employee from the list
+                Employees.Remove(employee);
+
+                // Return a 200 OK status with no content
+                return Ok();
+            }
+            catch (Exception)
+            {
+                // Return 500 Internal Server Error in case of an exception
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
 }
